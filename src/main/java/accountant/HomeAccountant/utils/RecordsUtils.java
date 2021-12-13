@@ -14,8 +14,9 @@ import java.util.List;
 
 public class RecordsUtils {
 
-    public static String DATE_PATTERN = "dd/MM/yyyy";
-    public static String EMPTY_SPACE = "\\h";
+    public static final String DATE_PATTERN = "dd/MM/yyyy";
+    public static final String EMPTY_SPACE = "\\h";
+    public static final String TYPE_FILTER = "Наличные";
 
     public static List<Record> parseCsv(MultipartFile file) {
         String row = "";
@@ -31,7 +32,9 @@ public class RecordsUtils {
                 String[] columns = row.split(",");
                 LocalDate date = LocalDate.parse(columns[0], DateTimeFormatter.ofPattern(DATE_PATTERN));
                 int sum = Integer.parseInt(columns[3].replaceAll(EMPTY_SPACE, ""));
-                result.add(new Record(date, columns[1], columns[2], sum, columns[4], columns[5]));
+                if(columns[1].equals(TYPE_FILTER)) {
+                    result.add(new Record(date, columns[1], columns[2], sum, columns[4], columns.length == 8 ? columns[7] : ""));
+                }
             }
         } catch (IOException e) {
             //todo add logger

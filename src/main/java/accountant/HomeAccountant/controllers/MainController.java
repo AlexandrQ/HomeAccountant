@@ -2,8 +2,10 @@ package accountant.HomeAccountant.controllers;
 
 import accountant.HomeAccountant.models.Record;
 import accountant.HomeAccountant.repo.RecordRepository;
+import accountant.HomeAccountant.utils.ChartsUtils;
 import accountant.HomeAccountant.utils.RecordsUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -32,13 +32,10 @@ public class MainController {
 
     @GetMapping("/google-charts")
     public String googleChart(Model model) {
-        Map<String, List<Record>> recordsMap = ((List<Record>) recordRepository.findAll()).stream()
-                .collect(Collectors.groupingBy(rec -> rec.getDate().format(DateTimeFormatter.ofPattern("yyyy-MMM"))));
-        Map<String, Integer> graphData = new TreeMap<>();
-        for(Map.Entry<String, List<Record>> entry : recordsMap.entrySet()) {
-            graphData.put(entry.getKey(), entry.getValue().stream().map(Record::getSum).reduce(Integer::sum).orElse(0));
-        }
-        model.addAttribute("chartData", graphData);
+        List<Record> allRecords = (List<Record>) recordRepository.findAll();
+        model.addAttribute("columnChartData", ChartsUtils.getColumnChartsMap(allRecords));
+        model.addAttribute("barchartData", ChartsUtils.getBarChartsMap(allRecords));
+        model.addAttribute("areaChartData", ChartsUtils.getAreaChartsMap(allRecords));
         return "google-charts";
     }
 
